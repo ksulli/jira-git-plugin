@@ -8,6 +8,8 @@ import com.xiplink.jira.git.FileDiff;
 import com.xiplink.jira.git.GitManager;
 import com.xiplink.jira.git.ViewLinkFormat;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.ObjectId;
@@ -72,11 +74,17 @@ public class LinkFormatRenderer implements GitLinkRenderer {
                 "${rev}", revision.getId().name(),
                 "${path}", path.getPath()
         );
-	
-	if (revision.getParentCount() > 0) {
-	    subst.put("${parent}", revision.getParent(0).getId().name());
-	}
-	    
+
+        if (revision.getParentCount() > 0) {
+            subst.put("${parent}", revision.getParent(0).getId().name());
+        }
+
+        try {
+            subst.put("${encpath}", URLEncoder.encode(path.getPath(),"UTF-8").replace("+", "%20"));
+        } catch (UnsupportedEncodingException e) {
+            assert false;
+        }
+
         ObjectId[] blobs = path.getBlobs();
         if (blobs.length == 1) {
             subst.put("${blob}", blobs[0].name());
